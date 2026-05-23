@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QR Health Record System</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
+<style>
+  :root {
+    --primary-color: #0d6efd;
+    --primary-dark: #0056b3;
+    --success-color: #198754;
+    --success-dark: #146c43;
+    --danger-color: #dc3545;
+    --warning-color: #fd7e14;
+    --info-color: #17a2b8;
+    --light-bg: #f0f4f8;
+    --card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  /* Animated Background */
+  body {
+    min-height: 100vh;
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  @keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Floating animated particles */
+  .particle {
+    position: fixed;
+    pointer-events: none;
+    opacity: 0.1;
+    z-index: 0;
+  }
+
+  .particle.one {
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, #0d6efd, transparent);
+    bottom: -150px;
+    left: -150px;
+    animation: float 20s infinite;
+  }
+
+  .particle.two {
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, #198754, transparent);
+    top: -175px;
+    right: -175px;
+    animation: float 25s infinite reverse;
+  }
+
+  .particle.three {
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle, #fd7e14, transparent);
+    bottom: 10%;
+    right: 10%;
+    animation: float 22s infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) translateX(0px); }
+    50% { transform: translateY(30px) translateX(20px); }
+  }
+
+  /* Main container */
+  .container {
+    background: rgba(255, 255, 255, 0.97);
+    border-radius: 20px;
+    padding: 40px;
+    margin: 30px auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    position: relative;
+    z-index: 10;
+    max-width: 1200px;
+  }
+
+  .hidden { display: none !important; }
+
+  /* Header styling */
+  .header-section {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 3px solid var(--primary-color);
+  }
+
+  .header-icon {
+    font-size: 60px;
+    margin-bottom: 15px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+
+  .gradient-title {
+    background: linear-gradient(135deg, var(--primary-color), var(--info-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 15px 0;
+  }
+
+  .subtitle {
+    color: #666;
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+
+  /* Buttons */
+  .btn {
+    border-radius: 12px;
+    font-weight: 600;
+    padding: 12px 24px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: left 0.5s;
+    z-index: -1;
+  }
+
+  .btn:hover::before {
+    left: 100%;
+  }
+
+  .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  }
+
+  .btn:active {
+    transform: translateY(-1px);
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), #0056b3);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    color: white;
+    box-shadow: 0 10px 30px rgba(13, 110, 253, 0.4);
+  }
+
+  .btn-success {
+    background: linear-gradient(135deg, var(--success-color), var(--success-dark));
+    color: white;
+  }
+
+  .btn-success:hover {
+    color: white;
+    box-shadow: 0 10px 30px rgba(25, 135, 84, 0.4);
+  }
+
+  .btn-secondary {
+    background: linear-gradient(135deg, #6c757d, #5a6268);
+    color: white;
+  }
+
+  .btn-secondary:hover {
+    color: white;
+  }
+
+  .btn-danger {
+    background: linear-gradient(135deg, var(--danger-color), #c82333);
+    color: white;
+  }
+
+  .btn-danger:hover {
+    color: white;
+    box-shadow: 0 10px 30px rgba(220, 53, 69, 0.4);
+  }
+
+  .btn-info {
+    background: linear-gradient(135deg, var(--info-color), #138496);
+    color: white;
+  }
+
+  .btn-info:hover {
+    color: white;
+  }
+
+  .btn-lg {
+    padding: 16px 32px;
+    font-size: 1.1rem;
+  }
+
+  /* Form styling */
+  .form-control, .form-select {
+    border-radius: 12px;
+    border: 2px solid #e0e0e0;
+    padding: 12px 16px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  .form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.3rem rgba(13, 110, 253, 0.25);
+    background: white;
+  }
+
+  .form-label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+  }
+
+  .form-label .required {
+    color: #dc3545;
+    margin-left: 4px;
+  }
+
+  .input-group-text {
+    background: linear-gradient(135deg, var(--primary-color), var(--info-color));
+    color: white;
+    border: none;
+    border-radius: 12px 0 0 12px;
+  }
+
+  .input-group .form-control {
+    border-radius: 0 12px 12px 0;
+  }
+
+  /* Dashboard sections */
+  .dashboard-section {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 244, 248, 0.95));
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 25px;
+    border-left: 6px solid var(--primary-color);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+  }
+
+  .dashboard-section:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+  }
+
+  .dashboard-section h5 {
+    color: var(--primary-color);
+    font-weight: 700;
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+  }
+
+  .dashboard-section i {
+    margin-right: 10px;
+    color: var(--primary-color);
+  }
+
+  /* Settings icon */
+  .settings-icon {
+    cursor: pointer;
+    font-size: 28px;
+    color: var(--primary-color);
+    transition: all 0.3s ease;
+    padding: 8px;
+    border-radius: 50%;
+  }
+
+  .settings-icon:hover {
+    color: white;
+    background: var(--primary-color);
+    transform: rotate(90deg);
+  }
+
+  /* Cards */
+  .card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    background: rgba(255, 255, 255, 0.98);
+    transition: all 0.3s ease;
+  }
+
+  .card:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+    transform: translateY(-5px);
+  }
+
+  /* Modals */
+  .modal-content {
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.99), rgba(240, 244, 248, 0.99));
+  }
+
+  .modal-header {
+    border-bottom: 2px solid var(--primary-color);
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.1), rgba(23, 162, 184, 0.1));
+  }
+
+  .modal-title {
+    font-weight: 700;
+    color: var(--primary-color);
+  }
+
+  .btn-close {
+    opacity: 0.7;
+  }
+
+  .btn-close:hover {
+    opacity: 1;
+  }
+
+  /* Alerts */
+  .alert {
+    border-radius: 12px;
+    border: 2px solid;
+    padding: 15px 20px;
+    font-weight: 500;
+  }
+
+  .alert-success {
+    border-color: var(--success-color);
+    background: rgba(25, 135, 84, 0.1);
+    color: var(--success-dark);
+  }
+
+  .alert-danger {
+    border-color: var(--danger-color);
+    background: rgba(220, 53, 69, 0.1);
+    color: #a02622;
+  }
+
+  .alert-info {
+    border-color: var(--info-color);
+    background: rgba(23, 162, 184, 0.1);
+    color: #0c5460;
+  }
+
+  /* Patient details card */
+  #smartCard {
+    border: 3px solid var(--primary-color);
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 25px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    animation: slideIn 0.5s ease;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  #smartQr {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 15px;
+  }
+
+  /* QR Reader */
+  .qr-reader-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 20px 0;
+  }
+
+  #reader {
+    width: 100%;
+    max-width: 500px;
+    aspect-ratio: 1;
+    border: 3px dashed var(--primary-color) !important;
+    border-radius: 15px !important;
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.05), rgba(23, 162, 184, 0.05)) !important;
+    overflow: hidden !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  #reader video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 12px !important;
+  }
+
+  /* Lists styling */
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  ul li {
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    border-left: 5px solid var(--primary-color);
+    background: rgba(13, 110, 253, 0.05);
+    border-radius: 5px;
+    transition: all 0.3s ease;
+  }
+
+  ul li:hover {
+    background: rgba(13, 110, 253, 0.1);
+    padding-left: 20px;
+  }
+
+  /* Back button styling */
+  .back-button {
+    margin-top: 20px;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .container {
+      padding: 20px;
+      margin: 15px;
+    }
+
+    .gradient-title {
+      font-size: 2rem;
+    }
+
+    .btn-lg {
+      padding: 12px 16px;
+      font-size: 1rem;
+    }
+
+    .admin-buttons, .doctor-options {
+      flex-direction: column;
+    }
+
+    .btn {
+      width: 100%;
+    }
+
+    .header-icon {
+      font-size: 40px;
+    }
+
+    #reader {
+      max-width: 400px !important;
+    }
+  }
+
+  /* Text colors */
+  h4, h5, h6 {
+    color: var(--primary-color);
+    font-weight: 700;
+  }
+
+  strong {
+    color: #333;
+    font-weight: 600;
+  }
+
+  .text-muted {
+    color: #999 !important;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Section backgrounds */
+  .section-diagnosis {
+    border-left-color: var(--success-color) !important;
+  }
+
+  .section-prescription {
+    border-left-color: var(--warning-color) !important;
+  }
+
+  .section-patient {
+    border-left-color: var(--info-color) !important;
+  }
+
+  /* Top bar styling */
+  .dashboard-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+
+  .dashboard-title {
+    display: flex;
+    align-items: center;
+  }
+
+  .dashboard-title .header-icon {
+    margin-right: 15px;
+    font-size: 40px;
+  }
+
+  .dashboard-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+  }
+</style>
+</head>
+<body>
+
+<!-- Animated Background Particles -->
+<div class="particle one"></div>
+<div class="particle two"></div>
+<div class="particle three"></div>
+
+<!-- Login Section -->
+<div class="container" id="loginSection">
+  <div class="header-section">
+    <div class="header-icon">
+      <i class="fas fa-heartbeat text-danger"></i>
+    </div>
+    <h1 class="gradient-title">QR Health Record System</h1>
+    <p class="subtitle">Secure Medical Records Management Platform</p>
+  </div>
+
+  <form id="loginForm" class="col-md-6 mx-auto">
+    <div class="mb-4">
+      <label class="form-label"><i class="fas fa-user"></i> Username/Phone</label>
+      <div class="input-group">
+        <span class="input-group-text"><i class="fas fa-user-circle"></i></span>
+        <input type="text" id="username" class="form-control" placeholder="Enter your username or phone" required />
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <label class="form-label"><i class="fas fa-lock"></i> Password</label>
+      <div class="input-group">
+        <span class="input-group-text"><i class="fas fa-key"></i></span>
+        <input type="password" id="password" class="form-control" placeholder="Enter your password" required />
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <label class="form-label"><i class="fas fa-user-tag"></i> Select Your Role</label>
+      <select id="role" name="role" class="form-select" required>
+        <option value="">-- Choose your role --</option>
+        <option value="admin">👨‍💼 Administrator</option>
+        <option value="doctor">👨‍⚕️ Doctor</option>
+        <option value="patient">👤 Patient</option>
+      </select>
+    </div>
+
+    <button class="btn btn-primary w-100 btn-lg" type="submit">
+      <i class="fas fa-sign-in-alt"></i> Login Now
+    </button>
+
+    <div class="text-center mt-3">
+      <a href="#" onclick="showForgotPassword()" style="color: var(--primary-color); font-weight:600; text-decoration:none;">
+        <i class="fas fa-key"></i> Forgot Password?
+      </a>
+    </div>
+  </form>
+
+  <div id="loginError" class="mt-4"></div>
+
+  <!-- Forgot Password Form -->
+  <div id="forgotPasswordSection" class="hidden col-md-6 mx-auto mt-4">
+    <div class="dashboard-section">
+      <h5><i class="fas fa-key"></i> Reset Password</h5>
+      <form id="forgotPasswordForm">
+        <div class="mb-3">
+          <label class="form-label"><i class="fas fa-user-tag"></i> Select Role</label>
+          <select id="forgotRole" class="form-select" required>
+            <option value="">-- Select Role --</option>
+            <option value="doctor">👨‍⚕️ Doctor</option>
+            <option value="patient">👤 Patient</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label"><i class="fas fa-phone"></i> Registered Phone Number</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-phone"></i></span>
+            <input type="text" id="forgotPhone" class="form-control" placeholder="Enter registered phone number" maxlength="10" required />
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label"><i class="fas fa-lock"></i> New Password</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-key"></i></span>
+            <input type="password" id="forgotNewPassword" class="form-control" placeholder="Enter new password" required />
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label"><i class="fas fa-lock"></i> Confirm New Password</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-check"></i></span>
+            <input type="password" id="forgotConfirmPassword" class="form-control" placeholder="Confirm new password" required />
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary flex-fill" type="submit"><i class="fas fa-save"></i> Reset Password</button>
+          <button class="btn btn-secondary flex-fill" type="button" onclick="hideForgotPassword()">Cancel</button>
+        </div>
+      </form>
+      <div id="forgotPasswordMsg" class="mt-3"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Dashboard -->
+<div class="container hidden" id="adminPanel">
+  <div class="dashboard-top-bar">
+    <div class="dashboard-title">
+      <span class="header-icon"><i class="fas fa-user-shield text-primary"></i></span>
+      <h2 class="gradient-title m-0">Administrator Dashboard</h2>
+    </div>
+    <div class="dashboard-actions">
+      <button class="btn btn-danger" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
+    </div>
+  </div>
+
+  <div class="d-flex gap-3 mb-5 flex-wrap">
+    <button class="btn btn-primary btn-lg flex-fill" onclick="showDoctorForm()">
+      <i class="fas fa-stethoscope"></i> Register New Doctor
+    </button>
+    <button class="btn btn-success btn-lg flex-fill" onclick="showPatientForm()">
+      <i class="fas fa-user-plus"></i> Register New Patient
+    </button>
+  </div>
+
+  <!-- Doctor Form -->
+  <div class="dashboard-section hidden" id="doctorFormSection">
+    <h5><i class="fas fa-hospital-user"></i> Doctor Registration Form</h5>
+    <form id="doctorForm">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Full Name <span class="required">*</span></label>
+          <input type="text" id="fullName" name="full_name" class="form-control" required>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Email <span class="required">*</span></label>
+          <input type="email" name="email" class="form-control" placeholder="Enter email address" required />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Phone Number <span class="required">*</span></label>
+          <input type="text" name="phone" class="form-control" placeholder="Enter 10-digit phone number" maxlength="10" pattern="[0-9]{10}" required />
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Date of Birth <span class="required">*</span></label>
+          <input type="date" name="date_of_birth" class="form-control" required />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Password <span class="required">*</span></label>
+          <input type="password" name="password" class="form-control" placeholder="Enter password" required />
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Specialization <span class="required">*</span></label>
+          <input type="text" name="specialization" class="form-control" placeholder="e.g., Cardiology" required />
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary flex-fill" type="submit"><i class="fas fa-save"></i> Register Doctor</button>
+        <button class="btn btn-secondary flex-fill" type="button" onclick="hideAllForms()">Cancel</button>
+      </div>
+    </form>
+    <div id="doctorMsg" class="mt-3"></div>
+  </div>
+
+  <!-- Patient Form -->
+  <div class="dashboard-section hidden" id="patientFormSection">
+    <h5><i class="fas fa-heart-pulse"></i> Patient Registration Form</h5>
+    <form id="patientFormHtml">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Full Name <span class="required">*</span></label>
+          <input type="text" name="full_name" class="form-control" placeholder="Enter full name" required />
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Date of Birth <span class="required">*</span></label>
+          <input type="date" name="date_of_birth" class="form-control" required />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Gender <span class="required">*</span></label>
+          <select name="gender" class="form-select" required>
+            <option value="">Select Gender</option>
+            <option>Male</option><option>Female</option><option>Other</option>
+          </select>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Blood Group</label>
+          <select name="blood_group" class="form-select">
+            <option value="">Select Blood Group (Optional)</option>
+            <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+            <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Phone Number <span class="required">*</span></label>
+          <input type="text" name="phone" class="form-control" placeholder="Enter 10-digit phone number" maxlength="10" pattern="[0-9]{10}" required />
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" placeholder="Enter email (Optional)" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Password <span class="required">*</span></label>
+          <input type="password" name="password" class="form-control" placeholder="Enter password" required />
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Address <span class="required">*</span></label>
+          <input type="text" name="address" class="form-control" placeholder="Enter address" required />
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Allergies</label>
+        <input type="text" name="allergies" class="form-control" placeholder="Enter any allergies (Optional)" />
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-success flex-fill" type="submit"><i class="fas fa-qrcode"></i> Register & Generate QR</button>
+        <button class="btn btn-secondary flex-fill" type="button" onclick="hideAllForms()">Cancel</button>
+      </div>
+    </form>
+    <div id="patientMsg" class="mt-3"></div>
+  </div>
+
+  <!-- Smart Card -->
+  <div id="smartCard" class="hidden">
+    <div class="row">
+      <div class="col-md-4 text-center">
+        <h6 class="mb-3"><i class="fas fa-qrcode"></i> Patient QR Code</h6>
+        <div id="smartQr"></div>
+      </div>
+      <div class="col-md-8">
+        <h6 class="mb-3"><i class="fas fa-id-card"></i> Patient Information Card</h6>
+        <p><strong><i class="fas fa-user"></i> Name:</strong> <span id="scName"></span></p>
+        <p><strong><i class="fas fa-birthday-cake"></i> DOB:</strong> <span id="scDOB"></span></p>
+        <p><strong><i class="fas fa-droplet"></i> Blood Group:</strong> <span id="scBlood"></span></p>
+        <p><strong><i class="fas fa-phone"></i> Phone:</strong> <span id="scPhone"></span></p>
+        <p><strong><i class="fas fa-envelope"></i> Email:</strong> <span id="scEmail"></span></p>
+        <p><strong><i class="fas fa-home"></i> Address:</strong> <span id="scAddress"></span></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Doctor Dashboard -->
+<div class="container hidden" id="doctorPanel">
+  <div class="dashboard-top-bar">
+    <div class="dashboard-title">
+      <span class="header-icon"><i class="fas fa-stethoscope text-info"></i></span>
+      <h2 class="gradient-title m-0">Doctor Dashboard</h2>
+    </div>
+    <div class="dashboard-actions">
+      <i class="fas fa-cog settings-icon" onclick="showDoctorSettings()" title="Settings"></i>
+    </div>
+  </div>
+
+  <div class="dashboard-section" id="doctorOptions">
+    <h5><i class="fas fa-search"></i> Select Patient Access Method</h5>
+    <div class="d-flex gap-3 flex-wrap">
+      <button class="btn btn-info btn-lg flex-fill" onclick="showScanOption()"><i class="fas fa-camera"></i> Scan QR Code</button>
+      <button class="btn btn-secondary btn-lg flex-fill" onclick="showManualOption()"><i class="fas fa-keyboard"></i> Enter Patient ID</button>
+    </div>
+  </div>
+
+  <div class="dashboard-section hidden section-patient" id="scanSection">
+    <h5><i class="fas fa-qrcode"></i> Scan Patient QR Code</h5>
+    <div class="qr-reader-wrapper">
+      <div id="reader"></div>
+    </div>
+    <p id="scanResult" class="mt-3 text-muted text-center"></p>
+  </div>
+
+  <div class="dashboard-section hidden" id="manualSection">
+    <h5><i class="fas fa-search-plus"></i> Enter Patient ID</h5>
+    <form id="patientIdForm">
+      <div class="input-group mb-3">
+        <input type="number" id="patientIdInput" class="form-control" placeholder="Enter Patient ID" required />
+        <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Search</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="dashboard-section hidden section-patient" id="patientDetailsSection">
+    <h5><i class="fas fa-user-circle"></i> Patient Information</h5>
+    <div id="patientDetailsDisplay" class="mb-4 p-3" style="background: rgba(13, 110, 253, 0.05); border-radius: 10px;"></div>
+
+    <h5 class="section-diagnosis" style="margin-top: 30px;"><i class="fas fa-file-medical"></i> Diagnosis History</h5>
+    <div id="diagnosisHistory" class="mb-4 p-3" style="background: rgba(25, 135, 84, 0.05); border-radius: 10px;"></div>
+
+    <h5><i class="fas fa-plus"></i> Add New Diagnosis</h5>
+    <form id="addDiagnosisForm" class="mb-4">
+      <textarea id="diagnosisText" class="form-control mb-2" placeholder="Enter diagnosis/clinical notes" rows="4" required></textarea>
+      <input type="hidden" id="selectedPatientId" />
+      <button class="btn btn-success w-100 mb-3" type="submit"><i class="fas fa-save"></i> Save Diagnosis</button>
+    </form>
+    <div id="diagnosisMessage"></div>
+
+    <h5 class="section-prescription" style="margin-top: 30px;"><i class="fas fa-prescription-bottle"></i> Prescription History</h5>
+    <div id="prescriptionHistory" class="mb-4 p-3" style="background: rgba(253, 126, 20, 0.05); border-radius: 10px;"></div>
+
+    <h5><i class="fas fa-plus"></i> Add New Prescription</h5>
+    <form id="addPrescriptionForm">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <input type="text" id="medicineName" class="form-control" placeholder="Medicine Name" required />
+        </div>
+        <div class="col-md-6 mb-3">
+          <input type="text" id="dosage" class="form-control" placeholder="Dosage (e.g., 500mg)" required />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <input type="text" id="frequency" class="form-control" placeholder="Frequency (e.g., 3x daily)" required />
+        </div>
+        <div class="col-md-6 mb-3">
+          <input type="number" id="duration" class="form-control" placeholder="Duration (days)" required />
+        </div>
+      </div>
+      <textarea id="prescriptionNotes" class="form-control mb-3" placeholder="Additional notes" rows="2"></textarea>
+      <button class="btn btn-primary w-100" type="submit"><i class="fas fa-plus"></i> Save Prescription</button>
+    </form>
+    <div id="prescriptionMessage" class="mt-3"></div>
+
+    <div class="back-button">
+      <button class="btn btn-secondary w-100" onclick="goBackToDoctorOptions()">
+        <i class="fas fa-arrow-left"></i> Go Back
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Patient Dashboard -->
+<div class="container hidden" id="patientPanel">
+  <div class="dashboard-top-bar">
+    <div class="dashboard-title">
+      <span class="header-icon"><i class="fas fa-user-injured text-success"></i></span>
+      <h2 class="gradient-title m-0">Patient Dashboard</h2>
+    </div>
+    <div class="dashboard-actions">
+      <i class="fas fa-cog settings-icon" onclick="showPatientSettings()" title="Settings"></i>
+    </div>
+  </div>
+
+  <div class="dashboard-section section-patient">
+  <h5><i class="fas fa-id-card"></i> My Personal Information</h5>
+  <div id="patientPersonalDetails"></div>
+  <div class="mt-4 text-center">
+    <h6><i class="fas fa-qrcode"></i> My QR Code</h6>
+    <div id="patientQrCode" style="display:flex; justify-content:center; padding:15px; background:white; border-radius:12px; margin-top:10px;"></div>
+  </div>
+</div>
+
+  <div class="dashboard-section section-diagnosis">
+    <h5><i class="fas fa-file-medical"></i> My Diagnosis History</h5>
+    <div id="patientDiagnosisHistory"></div>
+  </div>
+
+  <div class="dashboard-section section-prescription">
+    <h5><i class="fas fa-prescription-bottle"></i> My Prescriptions</h5>
+    <div id="patientPrescriptions"></div>
+  </div>
+</div>
+
+<!-- Doctor Settings Modal -->
+
+<div class="modal hidden" id="doctorSettingsModal" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-cog"></i> Settings</h5>
+        <button type="button" class="btn-close" onclick="closeDoctorSettings()"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted">Use the login page to reset your password.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeDoctorSettings()">Close</button>
+        <button type="button" class="btn btn-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Patient Settings Modal -->
+<div class="modal hidden" id="patientSettingsModal" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-cog"></i> Settings</h5>
+        <button type="button" class="btn-close" onclick="closePatientSettings()"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted">Use the login page to reset your password.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closePatientSettings()">Close</button>
+        <button type="button" class="btn btn-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentDoctorId = null;
+let currentPatientId = null;
+let currentUsername = null;
+let currentRole = null;
+
+const adminUsers = [
+  { username: 'admin', password: 'admin123', role: 'admin' }
+];
+
+function showDoctorForm() {
+  hideAllForms();
+  document.getElementById('doctorFormSection').classList.remove('hidden');
+}
+
+function showPatientForm() {
+  hideAllForms();
+  document.getElementById('patientFormSection').classList.remove('hidden');
+}
+
+function hideAllForms() {
+  document.getElementById('doctorFormSection').classList.add('hidden');
+  document.getElementById('patientFormSection').classList.add('hidden');
+  document.getElementById('smartCard').classList.add('hidden');
+}
+
+function showDoctorSettings() {
+  document.getElementById('doctorSettingsModal').classList.remove('hidden');
+  document.getElementById('doctorSettingsModal').style.display = 'block';
+}
+
+function closeDoctorSettings() {
+  document.getElementById('doctorSettingsModal').classList.add('hidden');
+  document.getElementById('doctorSettingsModal').style.display = 'none';
+}
+
+function showPatientSettings() {
+  document.getElementById('patientSettingsModal').classList.remove('hidden');
+  document.getElementById('patientSettingsModal').style.display = 'block';
+}
+
+function closePatientSettings() {
+  document.getElementById('patientSettingsModal').classList.add('hidden');
+  document.getElementById('patientSettingsModal').style.display = 'none';
+}
+
+function goBackToDoctorOptions() {
+  document.getElementById('patientDetailsSection').classList.add('hidden');
+  document.getElementById('scanSection').classList.add('hidden');
+  document.getElementById('manualSection').classList.add('hidden');
+  document.getElementById('doctorOptions').classList.remove('hidden');
+}
+
+//login form
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const role     = document.getElementById('role').value;
+
+    console.log("USERNAME:", username);
+    console.log("PASSWORD:", password);
+    console.log("ROLE:", role);
+
+    //  ADMIN LOGIN 
+    if (username === "admin" && password === "admin123" && role === "admin") {
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('adminPanel').classList.remove('hidden');
+        return;
+    }
+
+    const params = new URLSearchParams();
+    params.append('username', username);
+    params.append('password', password);
+    params.append('role', role);
+
+    try {
+        const response = await fetch('/HealthApp/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: params.toString()
+        });
+
+        const rawText = await response.text();
+        const text = rawText.trim();
+
+        
+        console.log("RAW SERVER RESPONSE: [" + rawText + "]");
+        console.log("TRIMMED RESPONSE:    [" + text + "]");
+
+        if (text.includes("Login Success")) {
+
+            const parts = text.split('|');
+            const userId = parts[1] ? parts[1].trim() : null;
+
+            console.log("LOGIN OK — userId: [" + userId + "]");
+
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('loginError').innerHTML = '';
+
+            if (role === 'doctor') {
+                currentDoctorId = userId;
+                currentUsername = username;
+                window.doctorId = userId;
+                console.log("Showing doctor panel...");
+                document.getElementById('doctorPanel').classList.remove('hidden');
+
+            } else if (role === 'patient') {
+                currentPatientId = userId;
+                console.log("Showing patient panel...");
+                document.getElementById('patientPanel').classList.remove('hidden');
+
+                if (userId) {
+                    showPatientDashboard(userId);
+                } else {
+                    console.log("WARNING: userId is null — dashboard not loaded");
+                }
+            }
+
+        } else {
+            console.log("LOGIN FAILED — server said: [" + text + "]");
+            document.getElementById('loginError').innerHTML =
+                '<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> ' + text + '</div>';
+        }
+
+    } catch (error) {
+        console.log("FETCH ERROR:", error);
+        document.getElementById('loginError').innerHTML =
+            '<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Server Error. Please try again.</div>';
+    }
+
+});
+
+//Admin: Register Doctor
+document.getElementById('doctorForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const formData = new FormData(e.target); 
+
+  // 🔍 DEBUG (IMPORTANT)
+  for (let pair of formData.entries()) {
+    console.log(pair[0] + " = " + pair[1]);
+  }
+
+  try {
+    const response = await fetch('saveDoctor', {
+      method: 'POST',
+      body: formData
+    });
+
+    const text = await response.text();
+    console.log("SERVER RESPONSE:", text);
+
+    if (text.includes("Doctor Registered Successfully")) {
+      document.getElementById('doctorMsg').innerHTML =
+        '<div class="alert alert-success">Doctor Registered Successfully</div>';
+      e.target.reset();
+    } else {
+      document.getElementById('doctorMsg').innerHTML =
+        '<div class="alert alert-danger">' + text + '</div>';
+    }
+
+  } catch (error) {
+    document.getElementById('doctorMsg').innerHTML =
+      '<div class="alert alert-danger">Error: ' + error + '</div>';
+  }
+});
+
+document.getElementById('patientFormHtml')?.addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const form = e.target;
+  const formData = new FormData(form);
+
+  try {
+    const response = await fetch('savePatient', {
+      method: 'POST',
+      body: formData
+    });
+
+    const text = await response.text();
+    console.log(text);
+
+    if (text.includes("Patient Registered Successfully")) {
+
+      document.getElementById('patientMsg').innerHTML =
+        '<div class="alert alert-success">' + text + '</div>';
+
+      //  GET VALUES BEFORE RESET
+      const pname = form.full_name.value;
+      const pdob = form.date_of_birth.value;
+      const pblood = form.blood_group.value || 'N/A';
+      const pphone = form.phone.value;
+      const pemail = form.email.value || 'N/A';
+      const paddress = form.address.value;
+
+      // SHOW SMART CARD
+      document.getElementById('smartCard').classList.remove('hidden');
+
+      //  SET DATA
+      document.getElementById('scName').innerText = pname;
+      document.getElementById('scDOB').innerText = pdob;
+      document.getElementById('scBlood').innerText = pblood;
+      document.getElementById('scPhone').innerText = pphone;
+      document.getElementById('scEmail').innerText = pemail;
+      document.getElementById('scAddress').innerText = paddress;
+
+   
+      document.getElementById('smartQr').innerHTML = "";
+
+      //  GENERATE QR
+      new QRCode(document.getElementById('smartQr'), {
+        text: pname + '-' + pdob,
+        width: 150,
+        height: 150
+      });
+
+     
+      form.reset();
+
+    } else {
+      document.getElementById('patientMsg').innerHTML =
+        '<div class="alert alert-danger">' + text + '</div>';
+    }
+
+  } catch (error) {
+    console.log(error);
+  }
+});
+// Doctor: Show Scan Option
+function showScanOption() {
+  document.getElementById('doctorOptions').classList.add('hidden');
+  document.getElementById('scanSection').classList.remove('hidden');
+  document.getElementById('manualSection').classList.add('hidden');
+  document.getElementById('patientDetailsSection').classList.add('hidden');
+  startScanner();
+}
+
+// Doctor: Show Manual Option
+function showManualOption() {
+  document.getElementById('doctorOptions').classList.add('hidden');
+  document.getElementById('scanSection').classList.add('hidden');
+  document.getElementById('manualSection').classList.remove('hidden');
+  document.getElementById('patientDetailsSection').classList.add('hidden');
+}
+
+// QR Scanner
+let html5QrCode;
+function startScanner() {
+  if (html5QrCode) {
+    html5QrCode.stop().then(() => initScanner()).catch(() => initScanner());
+  } else {
+    initScanner();
+  }
+}
+
+function initScanner() {
+  html5QrCode = new Html5Qrcode("reader");
+  html5QrCode.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: 250 },
+    qrCode => {
+      const parts = qrCode.split('-');
+      if (parts.length >= 2) {
+        const patientName = parts[0];
+        const patientDob = parts.slice(1).join('-');
+        fetchPatientByNameDob(patientName, patientDob);
+      }
+      html5QrCode.stop();
+    },
+    errorMessage => { }
+  );
+}
+
+document.getElementById('patientIdForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const patientId = document.getElementById('patientIdInput').value;
+  fetchPatientById(patientId);
+});
+
+async function fetchPatientByNameDob(name, dob) {
+	  try {
+	    const response = await fetch(
+	      'getPatient?name=' + encodeURIComponent(name) +
+	      '&dob=' + encodeURIComponent(dob)
+	    );
+
+	    
+	    if (!response.ok) {
+	      throw new Error("Server error");
+	    }
+
+	    const data = await response.json();
+	    console.log("FETCH BY QR:", data); 
+
+	    if (data.success) {
+	      displayPatientDetails(data.patient);
+	    } else {
+	      alert('Patient not found');
+	    }
+
+	  } catch (error) {
+	    console.error(error);
+	    alert('Error: ' + error.message);
+	  }
+	}
+
+async function fetchPatientById(id) {
+	  try {
+	    const response = await fetch('getPatient?id=' + id);
+
+	    
+	    if (!response.ok) {
+	      throw new Error("Server error");
+	    }
+
+	    const data = await response.json();
+	    console.log("FETCH BY ID:", data); 
+
+	    if (data.success) {
+	      displayPatientDetails(data.patient);
+	    } else {
+	      alert('Patient not found');
+	    }
+
+	  } catch (error) {
+	    console.error(error);
+	    alert('Error: ' + error.message);
+	  }
+	}
+
+function displayPatientDetails(patient) {
+  document.getElementById('selectedPatientId').value = patient.patient_id;
+  document.getElementById('scanSection').classList.add('hidden');
+  document.getElementById('manualSection').classList.add('hidden');
+  document.getElementById('patientDetailsSection').classList.remove('hidden');
+
+  const detailsHtml = `
+    <p><strong><i class="fas fa-id-badge"></i> ID:</strong> ${patient.patient_id}</p>
+    <p><strong><i class="fas fa-user"></i> Name:</strong> ${patient.full_name}</p>
+    <p><strong><i class="fas fa-calendar"></i> DOB:</strong> ${patient.date_of_birth}</p>
+    <p><strong><i class="fas fa-venus-mars"></i> Gender:</strong> ${patient.gender}</p>
+    <p><strong><i class="fas fa-droplet"></i> Blood Group:</strong> ${patient.blood_group || 'N/A'}</p>
+    <p><strong><i class="fas fa-phone"></i> Phone:</strong> ${patient.phone}</p>
+    <p><strong><i class="fas fa-envelope"></i> Email:</strong> ${patient.email || 'N/A'}</p>
+    <p><strong><i class="fas fa-home"></i> Address:</strong> ${patient.address || 'N/A'}</p>
+    <p><strong><i class="fas fa-warning"></i> Allergies:</strong> ${patient.allergies || 'None'}</p>
+  `;
+  document.getElementById('patientDetailsDisplay').innerHTML = detailsHtml;
+
+  fetch('getDiagnosis?patient_id=' + patient.patient_id)
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.diagnoses.length > 0) {
+        let diagnosisHtml = '';
+        data.diagnoses.forEach(diag => {
+          diagnosisHtml += `<li><strong><i class="fas fa-calendar-alt"></i> ${diag.diagnosis_date}:</strong> ${diag.diagnosis}</li>`;
+        });
+        document.getElementById('diagnosisHistory').innerHTML = '<ul>' + diagnosisHtml + '</ul>';
+      } else {
+        document.getElementById('diagnosisHistory').innerHTML = '<p class="text-muted"><i class="fas fa-info-circle"></i> No previous diagnoses.</p>';
+      }
+    });
+
+  fetch('getPrescription?patient_id=' + patient.patient_id)
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.prescriptions.length > 0) {
+        let prescHtml = '';
+        data.prescriptions.forEach(presc => {
+          prescHtml += `<li><strong>${presc.medicine_name}</strong> - ${presc.dosage} (${presc.frequency}) for ${presc.duration} days</li>`;
+        });
+        document.getElementById('prescriptionHistory').innerHTML = '<ul>' + prescHtml + '</ul>';
+      } else {
+        document.getElementById('prescriptionHistory').innerHTML = '<p class="text-muted"><i class="fas fa-info-circle"></i> No previous prescriptions.</p>';
+      }
+    });
+}
+
+document.getElementById('addDiagnosisForm').addEventListener('submit', async (e) => {
+	  e.preventDefault();
+	  const patientId = document.getElementById('selectedPatientId').value;
+	  const diagnosis = document.getElementById('diagnosisText').value;
+
+	  
+	  const doctorId = window.doctorId                          
+	               || document.getElementById('doctorId')?.value 
+	               || sessionStorage.getItem('doctorId')           
+	               || null;
+
+	  console.log('[DEBUG] doctor_id being sent:', doctorId);   
+
+	  if (!doctorId) {
+	    document.getElementById('diagnosisMessage').innerHTML =
+	      '<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Error: Doctor ID not found. Please re-login.</div>';
+	    return;                                                  
+	  }
+
+	  const formData = new FormData();
+	  formData.append('patient_id', patientId);
+	  formData.append('doctor_id',  doctorId);                 
+	  formData.append('diagnosis',  diagnosis);
+
+	  try {
+	    const response = await fetch('addDiagnosis', { method: 'POST', body: formData });
+	    const data = await response.text();
+
+	    if (data.toLowerCase().trim().includes('diagnosis added successfully')) {
+	      document.getElementById('diagnosisMessage').innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle"></i> Diagnosis saved successfully!</div>';
+	      document.getElementById('diagnosisText').value = '';
+	      fetch('getDiagnosis?patient_id=' + patientId)
+	        .then(response => response.json())
+	        .then(data => {
+	          if (data.success && data.diagnoses.length > 0) {
+	            let diagnosisHtml = '';
+	            data.diagnoses.forEach(diag => {
+	              diagnosisHtml += `<li><strong><i class="fas fa-calendar-alt"></i> ${diag.diagnosis_date}:</strong> ${diag.diagnosis}</li>`;
+	            });
+	            document.getElementById('diagnosisHistory').innerHTML = '<ul>' + diagnosisHtml + '</ul>';
+	          }
+	        });
+	    } else {
+	      document.getElementById('diagnosisMessage').innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Error: ' + data + '</div>';
+	    }
+	  } catch (error) {
+	    document.getElementById('diagnosisMessage').innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Error: ' + error + '</div>';
+	  }
+	});
+document.getElementById('addPrescriptionForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const patientId = document.getElementById('selectedPatientId').value;
+  const medicineName = document.getElementById('medicineName').value;
+  const dosage = document.getElementById('dosage').value;
+  const frequency = document.getElementById('frequency').value;
+  const duration = document.getElementById('duration').value;
+  const notes = document.getElementById('prescriptionNotes').value;
+
+  const formData = new FormData();
+  formData.append('patient_id', patientId);
+  formData.append('medicine_name', medicineName);
+  formData.append('dosage', dosage);
+  formData.append('frequency', frequency);
+  formData.append('duration', duration);
+  formData.append('notes', notes);
+
+  try {
+    const response = await fetch('addPrescription', { method: 'POST', body: formData });
+    const data = await response.text();
+
+    if (data.toLowerCase().includes('prescription added')) {
+      document.getElementById('prescriptionMessage').innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle"></i> Prescription saved successfully!</div>';
+      document.getElementById('addPrescriptionForm').reset();
+      fetch('getPrescription?patient_id=' + patientId)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.prescriptions.length > 0) {
+            let prescHtml = '';
+            data.prescriptions.forEach(presc => {
+              prescHtml += `<li><strong>${presc.medicine_name}</strong> - ${presc.dosage} (${presc.frequency}) for ${presc.duration} days</li>`;
+            });
+            document.getElementById('prescriptionHistory').innerHTML = '<ul>' + prescHtml + '</ul>';
+          }
+        });
+    } else {
+      document.getElementById('prescriptionMessage').innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Error: ' + data + '</div>';
+    }
+  } catch (error) {
+    document.getElementById('prescriptionMessage').innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Error: ' + error + '</div>';
+  }
+});
+async function showPatientDashboard(patientId) {
+
+    console.log("showPatientDashboard called with ID:", patientId);
+
+    if (!patientId) {
+        document.getElementById('patientPersonalDetails').innerHTML =
+            '<p class="text-danger">Error: Patient ID not found</p>';
+        return;
+    }
+
+    // ================= PATIENT =================
+    try {
+        const response = await fetch('/HealthApp/getPatient?id=' + patientId);
+
+        if (!response.ok) throw new Error("Patient API failed");
+
+        const data = await response.json();
+
+        if (data.success) {
+            const p = data.patient;
+
+            document.getElementById('patientPersonalDetails').innerHTML = `
+                <p><strong>Name:</strong> ${p.full_name}</p>
+                <p><strong>DOB:</strong> ${p.date_of_birth}</p>
+                <p><strong>Gender:</strong> ${p.gender}</p>
+                <p><strong>Blood Group:</strong> ${p.blood_group || 'N/A'}</p>
+                <p><strong>Phone:</strong> ${p.phone}</p>
+                <p><strong>Email:</strong> ${p.email || 'N/A'}</p>
+                <p><strong>Address:</strong> ${p.address || 'N/A'}</p>
+                <p><strong>Allergies:</strong> ${p.allergies || 'None'}</p>
+            `;
+         // Generate QR 
+            document.getElementById('patientQrCode').innerHTML = '';
+            new QRCode(document.getElementById('patientQrCode'), {
+                text: p.full_name + '-' + p.date_of_birth,
+                width: 150,
+                height: 150
+            });
+        }
+
+    } catch (error) {
+        console.log("Patient ERROR:", error);
+    }
+
+    // ================= DIAGNOSIS =================
+    try {
+        const diagResponse = await fetch('/HealthApp/getDiagnosis?patient_id=' + patientId);
+        const diagData = await diagResponse.json();
+
+        if (diagData.success && diagData.diagnoses.length > 0) {
+            let html = '';
+            diagData.diagnoses.forEach(d => {
+                html += `<li>${d.diagnosis_date} - ${d.diagnosis}</li>`;
+            });
+            document.getElementById('patientDiagnosisHistory').innerHTML = '<ul>' + html + '</ul>';
+        } else {
+            document.getElementById('patientDiagnosisHistory').innerHTML =
+                '<p>No diagnosis records</p>';
+        }
+
+    } catch (error) {
+        console.log("Diagnosis ERROR:", error);
+    }
+
+    // ================= PRESCRIPTIONS =================
+    try {
+  
+        const prescResponse = await fetch('/HealthApp/getPrescription?patient_id=' + patientId);
+        const prescData = await prescResponse.json();
+
+        if (prescData.success && prescData.prescriptions.length > 0) {
+            let html = '';
+            prescData.prescriptions.forEach(p => {
+                html += `<li>${p.medicine_name} - ${p.dosage} (${p.frequency})</li>`;
+            });
+            document.getElementById('patientPrescriptions').innerHTML = '<ul>' + html + '</ul>';
+        } else {
+            document.getElementById('patientPrescriptions').innerHTML =
+                '<p>No prescriptions</p>';
+        }
+
+    } catch (error) {
+        console.log("Prescription ERROR:", error);
+    }
+}
+function showForgotPassword() {
+	  document.getElementById('forgotPasswordSection').classList.remove('hidden');
+	  document.getElementById('forgotPasswordMsg').innerHTML = '';
+	  document.getElementById('forgotPasswordForm').reset();
+	}
+
+	function hideForgotPassword() {
+	  document.getElementById('forgotPasswordSection').classList.add('hidden');
+	  document.getElementById('forgotPasswordMsg').innerHTML = '';
+	  document.getElementById('forgotPasswordForm').reset();
+	}
+
+	document.getElementById('forgotPasswordForm').addEventListener('submit', async (e) => {
+	  e.preventDefault();
+
+	  const role        = document.getElementById('forgotRole').value;
+	  const phone       = document.getElementById('forgotPhone').value.trim();
+	  const newPassword = document.getElementById('forgotNewPassword').value;
+	  const confirmPass = document.getElementById('forgotConfirmPassword').value;
+
+	  if (newPassword !== confirmPass) {
+	    document.getElementById('forgotPasswordMsg').innerHTML =
+	      '<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Passwords do not match</div>';
+	    return;
+	  }
+
+	  const formData = new FormData();
+	  formData.append('role', role);
+	  formData.append('phone', phone);
+	  formData.append('new_password', newPassword);
+
+	  try {
+	    const response = await fetch('/HealthApp/forgotPassword', { method: 'POST', body: formData });
+	    const text = await response.text();
+
+	    if (text.includes('Password reset successfully')) {
+	      document.getElementById('forgotPasswordMsg').innerHTML =
+	        '<div class="alert alert-success"><i class="fas fa-check-circle"></i> Password reset successfully! You can now login.</div>';
+	      document.getElementById('forgotPasswordForm').reset();
+	      setTimeout(() => hideForgotPassword(), 3000);
+	    } else {
+	      document.getElementById('forgotPasswordMsg').innerHTML =
+	        '<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> ' + text + '</div>';
+	    }
+	  } catch (error) {
+	    document.getElementById('forgotPasswordMsg').innerHTML =
+	      '<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Server error. Please try again.</div>';
+	  }
+	});
+function logout() {
+  location.reload();
+}
+</script>
+
+</body>
+</html>
