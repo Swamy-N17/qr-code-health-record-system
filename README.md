@@ -13,7 +13,7 @@ QR codes to instantly retrieve patient medical history.
 
 ## 🛠️ Tech Stack
 - **Frontend:** HTML, CSS
-- **Database:** Oracle SQL
+- **Database:** MySQL
 
 ## 📊 Database Design
 5 interconnected tables:
